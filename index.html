@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>艾多美 PV 試算系統</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1f4e78;
+            border-bottom: 2px solid #1f4e78;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* --- 修改後的佈局：標籤在上，輸入框在下 --- */
+        .form-group {
+            display: flex;
+            flex-direction: column; /* 垂直排列 */
+            align-items: flex-start;
+            margin-bottom: 25px;    /* 增加每組之間的間距 */
+        }
+        .form-group label {
+            width: 100%;
+            font-weight: bold;
+            margin-bottom: 8px;     /* 標籤與輸入框的距離 */
+            color: #1f4e78;
+            font-size: 16px;
+        }
+        .form-group input {
+            width: 100%;            /* 輸入框填滿寬度 */
+            box-sizing: border-box; /* 確保 padding 不會撐破邊框 */
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline-color: #1f4e78;
+        }
+        /* -------------------------------------- */
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background-color: #1f4e78;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        .btn-submit:hover {
+            background-color: #122e47;
+        }
+        
+        /* 視覺化圖示區域 CSS */
+        .tree-section {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #fcfcfc;
+            border: 1px dashed #ccc;
+            border-radius: 10px;
+        }
+        .tree-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .node-box {
+            border: 2px solid #5b9bd5;
+            background-color: #e9f5ff;
+            padding: 15px 25px;
+            border-radius: 5px;
+            text-align: center;
+            z-index: 2;
+            min-width: 160px;
+        }
+        .node-main {
+            font-weight: bold;
+            color: #1f4e78;
+        }
+        .node-value {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+        /* 連接線 */
+        .lines-h {
+            width: 240px;
+            height: 20px;
+            border-top: 2px solid #5b9bd5;
+            border-left: 2px solid #5b9bd5;
+            border-right: 2px solid #5b9bd5;
+            margin-top: -2px;
+            z-index: 1;
+        }
+        .bottom-nodes {
+            display: flex;
+            justify-content: space-between;
+            width: 320px;
+            margin-top: -2px;
+        }
+        .node-leaf {
+            border: 2px solid #5b9bd5;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            width: 120px;
+        }
+
+        /* --- 新增：小邊合計業績的圖示 CSS --- */
+        .small-leg-box {
+            margin-top: 25px;
+            border: 2px dashed #d9534f;
+            background-color: #fdf0ef;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            width: 180px;
+        }
+        .small-leg-box .node-main {
+            color: #d9534f;
+        }
+
+        /* 試算結果文字區域 */
+        .result-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff2cc;
+            border-left: 5px solid #ffc000;
+            display: none;
+        }
+        .result-panel h3 {
+            margin-top: 0;
+            color: #b98e00;
+        }
+        .result-list {
+            list-style: none;
+            padding: 0;
+        }
+        .result-list li {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .highlight {
+            color: #c00000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>PV 獎金試算工具</h2>
+    
+    <div class="form-group">
+        <label for="leftPV">1. 左邊「新增」業績 (萬 PV)：</label>
+        <input type="number" id="leftPV" placeholder="輸入本次新增萬 PV" min="0" step="any">
+    </div>
+
+    <div class="form-group">
+        <label for="rightPV">2. 右邊「新增」業績 (萬 PV)：</label>
+        <input type="number" id="rightPV" placeholder="輸入本次新增萬 PV" min="0" step="any">
+    </div>
+
+    <div class="form-group">
+        <label for="personalPV">3. 個人帳號「新增」業績 (萬 PV)：</label>
+        <input type="number" id="personalPV" placeholder="輸入本次新增萬 PV" min="0" step="any">
+    </div>
+    
+    <button class="btn-submit" onclick="calculatePV()">進行試算</button>
+
+    <div class="result-panel" id="resultPanel">
+        <h3>📊 試算結果 (累計狀態)</h3>
+        <ul class="result-list" id="resultData"></ul>
+    </div>
+
+    <div class="tree-section">
+        <div class="tree-title">組織架構圖示</div>
+        <div class="tree-container">
+            <div class="node-box">
+                <div class="node-main">本人 PV (My Accumulated)</div>
+                <div class="node-value" id="displayMyAccumulated">10,000</div>
+                <div style="font-size: 12px; color: #d9534f;" id="displayTempPersonal">保留可對碰 Personal PV: 0</div>
+            </div>
+            <div class="lines-h"></div>
+            <div class="bottom-nodes">
+                <div class="node-leaf">
+                    <div class="node-main">左邊</div>
+                    <div class="node-value highlight" id="displayLeft">0</div>
+                </div>
+                <div class="node-leaf">
+                    <div class="node-main">右邊</div>
+                    <div class="node-value highlight" id="displayRight">0</div>
+                </div>
+            </div>
+            
+            <div class="small-leg-box">
+                <div class="node-main">小邊合計業績</div>
+                <div class="node-value highlight" id="displaySmallLeg">0</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 初始狀態
+    let myAccumulatedPV = 10000;
+    let retainedPersonalPV = 0; 
+    let currentLeftPV = 0;      
+    let currentRightPV = 0;     
+
+    window.onload = function() {
+        updateTreeDisplay(myAccumulatedPV, retainedPersonalPV, currentLeftPV, currentRightPV);
+    };
+
+    function calculatePV() {
+        let addLeft = (parseFloat(document.getElementById('leftPV').value) || 0) * 10000;
+        let addRight = (parseFloat(document.getElementById('rightPV').value) || 0) * 10000;
+        let addPersonal = (parseFloat(document.getElementById('personalPV').value) || 0) * 10000;
+
+        myAccumulatedPV += addPersonal;       
+        retainedPersonalPV += addPersonal;    
+        currentLeftPV += addLeft;             
+        currentRightPV += addRight;           
+
+        let checkLeft = currentLeftPV;
+        let checkRight = currentRightPV;
+
+        // 個人 PV 補較小邊邏輯
+        if (checkLeft <= checkRight) {
+            checkLeft += retainedPersonalPV;
+        } else {
+            checkRight += retainedPersonalPV;
+        }
+
+        let isMatch = (checkLeft >= 300000 && checkRight >= 300000);
+
+        if (isMatch) {
+            retainedPersonalPV = 0;
+            currentLeftPV = 0;
+            currentRightPV = 0;
+            alert("🎉 恭喜！左右邊業績皆達30萬以上，達成對碰！");
+        } 
+
+        // 清空輸入框
+        document.getElementById('leftPV').value = "";
+        document.getElementById('rightPV').value = "";
+        document.getElementById('personalPV').value = "";
+
+        // 計算目前的小邊合計 (左右邊較小者 + 保留的 Personal PV)
+        // 若已達成對碰，因上方變數皆已歸零，這裡算出來自然會是 0
+        let smallLegTotalAfter = Math.min(currentLeftPV, currentRightPV) + retainedPersonalPV;
+
+        // 更新結果文字，新增第 5 點
+        const resultHTML = `
+            <li><strong>1. My Accumulated PV：</strong> ${myAccumulatedPV.toLocaleString()} PV</li>
+            <li><strong>2. Personal PV (保留池)：</strong> ${retainedPersonalPV.toLocaleString()} PV ${isMatch ? '<span style="color:red;">(已歸零)</span>' : ''}</li>
+            <li><strong>3. 左邊業績：</strong> ${currentLeftPV.toLocaleString()} PV ${isMatch ? '<span style="color:red;">(已歸零)</span>' : ''}</li>
+            <li><strong>4. 右邊業績：</strong> ${currentRightPV.toLocaleString()} PV ${isMatch ? '<span style="color:red;">(已歸零)</span>' : ''}</li>
+            <li><strong>5. 小邊合計業績：</strong> ${smallLegTotalAfter.toLocaleString()} PV ${isMatch ? '<span style="color:red;">(已歸零)</span>' : ''}</li>
+        `;
+        document.getElementById('resultData').innerHTML = resultHTML;
+        document.getElementById('resultPanel').style.display = 'block';
+
+        updateTreeDisplay(myAccumulatedPV, retainedPersonalPV, currentLeftPV, currentRightPV);
+    }
+
+    function updateTreeDisplay(accumulated, personal, left, right) {
+        document.getElementById('displayMyAccumulated').innerText = accumulated.toLocaleString();
+        document.getElementById('displayTempPersonal').innerText = `保留可對碰 Personal PV: ${personal.toLocaleString()}`;
+        document.getElementById('displayLeft').innerText = Number(left).toLocaleString();
+        document.getElementById('displayRight').innerText = Number(right).toLocaleString();
+        
+        // --- 新增：更新小邊合計數值 ---
+        let smallLegTotal = Math.min(left, right) + personal;
+        document.getElementById('displaySmallLeg').innerText = smallLegTotal.toLocaleString() + " PV";
+    }
+</script>
+
+</body>
+</html>
